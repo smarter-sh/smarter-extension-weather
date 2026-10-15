@@ -1,28 +1,42 @@
 # Build the extension's archive on each v* tag, attach it to the GitHub release, and print its
 # sha256, which the release's registry entry needs: extensions/<slug>/<version>.yaml in
 # smarter-sh/extensions-registry.
+#
+# It can also be started by hand, from the Actions tab, for an existing tag, for example to retry
+# a failed release. If the tag's release already exists, its archive is replaced.
 name: Release
 
 on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The tag to release, e.g. v1.0.0"
+        required: true
+        type: string
 
 permissions:
   contents: write
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: refs/tags/${{ env.TAG }}
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Check that the tag is the manifest's version
         run: |
           VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
-          test "v${VERSION}" = "${GITHUB_REF_NAME}" || { echo "tag ${GITHUB_REF_NAME} is not v${VERSION}"; exit 1; }
+          test "v${VERSION}" = "${TAG}" || { echo "tag ${TAG} is not v${VERSION}"; exit 1; }
       - name: Build the archive
         id: build
         run: |
@@ -33,11 +47,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" "${{ steps.build.outputs.archive }}" \
-            --title "${GITHUB_REF_NAME}" \
-            --notes "sha256: ${{ steps.build.outputs.sha256 }}"
+          if gh release view "${TAG}" > /dev/null 2>&1; then
+            gh release upload "${TAG}" "${{ steps.build.outputs.archive }}" --clobber
+            gh release edit "${TAG}" --notes "sha256: ${{ steps.build.outputs.sha256 }}"
+          else
+            gh release create "${TAG}" "${{ steps.build.outputs.archive }}" \
+              --title "${TAG}" \
+              --notes "sha256: ${{ steps.build.outputs.sha256 }}"
+          fi
       - name: Registry entry
         run: |
           echo "### Registry entry" >> "$GITHUB_STEP_SUMMARY"
-          echo "archive_url: https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/$(basename ${{ steps.build.outputs.archive }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "archive_url: https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/$(basename ${{ steps.build.outputs.archive }})" >> "$GITHUB_STEP_SUMMARY"
           echo "sha256: ${{ steps.build.outputs.sha256 }}" >> "$GITHUB_STEP_SUMMARY"
