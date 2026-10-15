@@ -1,27 +1,26 @@
-# Build the extension's archive on each v* tag, attach it to the GitHub release, and print its
-# sha256, which the release's registry entry needs: extensions/<slug>/<version>.yaml in
-# smarter-sh/extensions-registry.
+# Release the extension with semantic-release, on each push to main: see release.config.js. A fix
+# releases a patch, a feat a minor version, and a BREAKING CHANGE a major version; other commits
+# release nothing. A release sets the version in pyproject.toml, adds its notes to CHANGELOG.md,
+# commits both and tags the commit v<version>, and creates the GitHub release, with the archive and
+# its sha256 attached. The summary prints what the release's registry entry needs:
+# extensions/<slug>/<version>.yaml in smarter-sh/extensions-registry.
 #
-# It can also be started by hand, from the Actions tab, for an existing tag, for example to retry
-# a failed release. If the tag's release already exists, its archive is replaced.
+# It can also be started by hand, from the Actions tab, for example to retry a failed release.
 name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main]
   workflow_dispatch:
-    inputs:
-      tag:
-        description: "The tag to release, e.g. v1.0.0"
-        required: true
-        type: string
 
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
 
-env:
-  TAG: ${{ inputs.tag || github.ref_name }}
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -29,34 +28,40 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: refs/tags/${{ env.TAG }}
+          fetch-depth: 0
+          persist-credentials: false
+
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Check that the tag is the manifest's version
-        run: |
-          VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
-          test "v${VERSION}" = "${TAG}" || { echo "tag ${TAG} is not v${VERSION}"; exit 1; }
-      - name: Build the archive
-        id: build
-        run: |
-          python scripts/package.py dist | tee build.txt
-          echo "archive=$(sed -n 1p build.txt)" >> "$GITHUB_OUTPUT"
-          echo "sha256=$(sed -n 2p build.txt)" >> "$GITHUB_OUTPUT"
-      - name: Create the release
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Install semantic-release's plugins
+        run: npm install --no-audit --no-fund
+
+      - name: Semantic release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v5
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if gh release view "${TAG}" > /dev/null 2>&1; then
-            gh release upload "${TAG}" "${{ steps.build.outputs.archive }}" --clobber
-            gh release edit "${TAG}" --notes "sha256: ${{ steps.build.outputs.sha256 }}"
-          else
-            gh release create "${TAG}" "${{ steps.build.outputs.archive }}" \
-              --title "${TAG}" \
-              --notes "sha256: ${{ steps.build.outputs.sha256 }}"
-          fi
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+
       - name: Registry entry
+        if: steps.semantic.outputs.new_release_published == 'true'
+        env:
+          TAG: ${{ steps.semantic.outputs.new_release_git_tag }}
         run: |
-          echo "### Registry entry" >> "$GITHUB_STEP_SUMMARY"
-          echo "archive_url: https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/$(basename ${{ steps.build.outputs.archive }})" >> "$GITHUB_STEP_SUMMARY"
-          echo "sha256: ${{ steps.build.outputs.sha256 }}" >> "$GITHUB_STEP_SUMMARY"
+          ARCHIVE=$(ls dist/*.zip)
+          {
+            echo "### Registry entry"
+            echo ""
+            echo "archive_url: https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/$(basename "${ARCHIVE}")"
+            echo ""
+            echo "sha256: $(cut -d ' ' -f 1 "${ARCHIVE}.sha256")"
+          } >> "$GITHUB_STEP_SUMMARY"

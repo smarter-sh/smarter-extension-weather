@@ -6,3 +6,5 @@ dist/
 .coverage
 coverage.xml
 .smarter/
+node_modules/
+package-lock.json

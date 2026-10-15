@@ -1,5 +1,6 @@
 """
-Build this Smarter Extension's archive, <slug>-<version>.zip, and print its sha256.
+Build this Smarter Extension's archive, <slug>-<version>.zip, and print its sha256, which it also
+writes to <slug>-<version>.zip.sha256, in the format of sha256sum.
 
 It includes what ``manage.py package_extension`` includes: pyproject.toml, the README, LICENSE and
 CHANGELOG, and the package, without caches, with every file's timestamp fixed, so that the same
@@ -53,8 +54,10 @@ def main() -> None:
     output.mkdir(parents=True, exist_ok=True)
     target = output / f"{slug}-{version}.zip"
     target.write_bytes(buffer.getvalue())
+    sha256 = hashlib.sha256(buffer.getvalue()).hexdigest()
+    Path(f"{target}.sha256").write_text(f"{sha256}  {target.name}\n", encoding="utf-8")
     print(target)
-    print(hashlib.sha256(buffer.getvalue()).hexdigest())
+    print(sha256)
 
 
 if __name__ == "__main__":

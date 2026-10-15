@@ -42,6 +42,11 @@ docker exec smarter-app bash -c "cd /home/smarter_user/smarter && python manage.
 
 ## Release
 
-Bump `version` in `pyproject.toml`, update `CHANGELOG.md`, and push a `v<version>` tag. The release
-workflow attaches the archive to a GitHub release and prints its sha256, for the release's entry in
-[smarter-sh/extensions-registry](https://github.com/smarter-sh/extensions-registry).
+Releases are made by [semantic-release](https://semantic-release.gitbook.io/), on each push to
+`main`, from the commits' [conventional commit](https://www.conventionalcommits.org/) types: a
+`fix:` releases a patch, a `feat:` a minor version, and a `BREAKING CHANGE:` a major version. Don't
+edit `version` in `pyproject.toml` or `CHANGELOG.md` by hand: the release sets the version, adds
+its notes to the changelog, tags the commit `v<version>`, and attaches the archive and its sha256
+to the GitHub release. The release workflow's summary prints them, for the release's entry in
+[smarter-sh/extensions-registry](https://github.com/smarter-sh/extensions-registry). See
+`release.config.js`.
