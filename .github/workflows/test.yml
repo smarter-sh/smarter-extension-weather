@@ -3,8 +3,8 @@
 # smarter.apps.llmtool.extension.testing, so they need Smarter's code and libraries, but not its
 # database, Redis or Django setup.
 #
-# SMARTER_REF is the branch of smarter-sh/smarter whose code the tests run against: alpha, until
-# the Extension framework is released on main.
+# SMARTER_REF is the branch or tag of smarter-sh/smarter whose code the tests run against: main,
+# the latest release. Set it to alpha to test against unreleased changes to the Extension framework.
 # The "Upload coverage to Codecov" step uses the CODECOV_TOKEN secret.
 name: Test
 
@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
 
 env:
-  SMARTER_REF: alpha
+  SMARTER_REF: main
 
 jobs:
   test:
