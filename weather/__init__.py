@@ -19,6 +19,7 @@ Tools
 -----
 
 ``get_weather(location, unit)``
-    The temperature, precipitation, wind speed and cloud cover, hour by hour, for the next 24
-    hours, in metric or US customary units.
+    The current temperature, precipitation, wind speed and cloud cover, and the forecast for each
+    of the next 24 hours, starting this hour, in metric or US customary units. Times are in the
+    location's own timezone, and the result names the unit of every measurement.
 """

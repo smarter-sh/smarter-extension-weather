@@ -1,15 +1,14 @@
 """The weather extension's tools."""
 
 from pydantic import JsonValue
-
 from smarter.apps.llmtool.extension import ExtensionContext, ExtensionToolError, SmarterExtensionTool
 
 from .models import WeatherArguments, WeatherResult
-from .services import ForecastError, GeocodingError, forecast, geocode
+from .services import UNITS, ForecastError, GeocodingError, geocode, weather
 
 
 class GetWeather(SmarterExtensionTool):
-    """Get the current weather and a 24-hour forecast for a location."""
+    """Get the current weather, and the forecast for the next 24 hours, for a location."""
 
     name = "get_weather"
     arguments_model = WeatherArguments
@@ -18,7 +17,7 @@ class GetWeather(SmarterExtensionTool):
         settings = context.settings
         try:
             place = geocode(arguments.location, settings.google_maps_api_key.get_secret_value())
-            hours = forecast(place, arguments.unit, settings.weather_api_url)
+            found = weather(place, arguments.unit, settings.weather_api_url)
         except GeocodingError as e:
             raise ExtensionToolError(f"Could not find {arguments.location}: {e}") from e
         except ForecastError as e:
@@ -28,6 +27,8 @@ class GetWeather(SmarterExtensionTool):
             location=place.address,
             latitude=place.latitude,
             longitude=place.longitude,
-            unit=arguments.unit,
-            forecast=hours,
+            timezone=found.timezone,
+            units=UNITS[arguments.unit],
+            current=found.current,
+            forecast=found.forecast,
         ).model_dump(mode="json")

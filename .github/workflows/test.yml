@@ -1,0 +1,58 @@
+# Run the extension's tests, with coverage, against a source checkout of Smarter, and upload the
+# coverage report to Codecov. The tests call the tools directly, with the helpers in
+# smarter.apps.llmtool.extension.testing, so they need Smarter's code and libraries, but not its
+# database, Redis or Django setup.
+#
+# SMARTER_REF is the branch of smarter-sh/smarter whose code the tests run against: alpha, until
+# the Extension framework is released on main.
+# The "Upload coverage to Codecov" step uses the CODECOV_TOKEN secret.
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  SMARTER_REF: alpha
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check out Smarter
+        uses: actions/checkout@v6
+        with:
+          repository: smarter-sh/smarter
+          ref: ${{ env.SMARTER_REF }}
+          path: .smarter
+          sparse-checkout: |
+            smarter/smarter
+            smarter/requirements
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: .smarter/smarter/requirements/base.txt
+
+      - name: Install Smarter's libraries
+        run: pip install -r .smarter/smarter/requirements/base.txt coverage
+
+      - name: Unit tests, with coverage
+        env:
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/.smarter/smarter
+        run: |
+          python -m coverage run --source=. --omit='tests/*,scripts/*,.smarter/*' -m unittest discover -s tests -t . -v
+          python -m coverage report
+          python -m coverage xml -o coverage.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v7
+        with:
+          files: ./coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
