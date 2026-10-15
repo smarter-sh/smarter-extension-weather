@@ -1,0 +1,35 @@
+[project]
+name = "smarter-extension-weather"
+version = "0.1.0"
+description = "Current weather and a 24-hour forecast for any location."
+authors = [{ name = "The Smarter Project" }]
+license = "AGPL-3.0"
+requires-python = ">=3.12"
+dependencies = [
+    "googlemaps>=4.10",
+    "openmeteo-requests>=1.5",
+    "pandas>=2",
+]
+
+[project.urls]
+Homepage = "https://github.com/smarter-sh/smarter-extension-weather"
+
+[tool.smarter]
+slug = "weather"
+package = "weather"
+display-name = "Weather"
+requires-smarter = ">=0.27"
+tools = ["weather.tools:GetWeather"]
+timeout = 30
+
+[[tool.smarter.settings]]
+name = "google_maps_api_key"
+type = "secret"
+required = true
+description = "A Google Maps Geocoding API key, which finds the latitude and longitude of a location."
+
+[[tool.smarter.settings]]
+name = "weather_api_url"
+type = "url"
+default = "https://api.open-meteo.com/v1/forecast"
+description = "The Open-Meteo forecast api."
