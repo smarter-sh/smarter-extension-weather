@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1](https://github.com/smarter-sh/smarter-extension-weather/compare/v0.2.0...v0.2.1) (2026-10-16)
+
+### Bug Fixes
+
+* downgrade openmeteo-request version pin ([350ae08](https://github.com/smarter-sh/smarter-extension-weather/commit/350ae08439cc1c31914c5c388acd010f4fb389d1))
+
 ## [0.2.0](https://github.com/smarter-sh/smarter-extension-weather/compare/v0.1.0...v0.2.0) (2026-10-15)
 
 ### Features
