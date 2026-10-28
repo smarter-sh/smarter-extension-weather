@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.2](https://github.com/smarter-sh/smarter-extension-weather/compare/v0.2.1...v0.2.2) (2026-10-28)
+
+### Performance
+
+* cache forecasts for an hour ([08461a3](https://github.com/smarter-sh/smarter-extension-weather/commit/08461a357e2252c345652fe32d9265f45053f658))
+
 ## [0.2.1](https://github.com/smarter-sh/smarter-extension-weather/compare/v0.2.0...v0.2.1) (2026-10-16)
 
 ### Bug Fixes
