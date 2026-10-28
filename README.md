@@ -13,7 +13,9 @@ that gives LLMs the current weather and a 24-hour forecast for any location. Its
 `get_weather`, is the tool that the
 [OpenAI function calling guide](https://platform.openai.com/docs/guides/function-calling) describes,
 implemented for real: it finds the location with the Google Maps Geocoding API, and gets the
-forecast from [Open-Meteo](https://open-meteo.com/).
+forecast from [Open-Meteo](https://open-meteo.com/). A forecast is cached for an hour (the tool's
+`cache_ttl`), so the same location and unit, from any LLMClient, are answered without calling
+either service again, on platforms that cache tool results.
 
 It is the reference example of the
 [Smarter Extension developer guide](https://docs.smarter.sh/en/latest/smarter-framework/extensions/developer-guide.html).

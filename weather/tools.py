@@ -12,6 +12,8 @@ class GetWeather(SmarterExtensionTool):
 
     name = "get_weather"
     arguments_model = WeatherArguments
+    cache_ttl = 3600
+    """A forecast changes slowly, and depends only on the location, the unit and the settings, not on who asks."""
 
     def call(self, arguments: WeatherArguments, context: ExtensionContext) -> JsonValue:
         settings = context.settings

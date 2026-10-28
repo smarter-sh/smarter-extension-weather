@@ -41,6 +41,10 @@ def open_meteo_response(hours: int = 24) -> MagicMock:
 class TestGetWeather(unittest.TestCase):
     """Test the tool."""
 
+    def test_cache_ttl(self):
+        """The tool changes nothing, and its result doesn't depend on who asks, so a forecast is cached for an hour."""
+        self.assertEqual(GetWeather.cache_ttl, 3600)
+
     def test_weather(self):
         found = Weather(timezone="Europe/Paris", current=NOW, forecast=[NOW])
         with patch("weather.tools.geocode", return_value=PARIS), patch("weather.tools.weather", return_value=found):
