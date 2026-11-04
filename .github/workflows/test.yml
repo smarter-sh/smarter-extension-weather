@@ -14,17 +14,21 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   SMARTER_REF: main
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Check out Smarter
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           repository: smarter-sh/smarter
           ref: ${{ env.SMARTER_REF }}
@@ -33,7 +37,7 @@ jobs:
             smarter/smarter
             smarter/requirements
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.14"
           cache: pip
@@ -51,7 +55,7 @@ jobs:
           python -m coverage xml -o coverage.xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           files: ./coverage.xml
           token: ${{ secrets.CODECOV_TOKEN }}
