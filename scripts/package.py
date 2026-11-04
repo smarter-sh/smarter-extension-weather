@@ -1,6 +1,8 @@
 """
-Build this Smarter Extension's archive, <slug>-<version>.zip, and print its sha256, which it also
-writes to <slug>-<version>.zip.sha256, in the format of sha256sum.
+Build this Smarter Extension's release archive, ``<slug>-<version>.zip``, and print its sha256.
+
+The sha256 is also written to ``<slug>-<version>.zip.sha256``, in the format of sha256sum. The
+Smarter Extension registry records it, and Smarter checks it when it installs the archive.
 
 It includes what ``manage.py package_extension`` includes: pyproject.toml, the README, LICENSE and
 CHANGELOG, and the package, without caches, with every file's timestamp fixed, so that the same
@@ -17,7 +19,9 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+"""The repository's root, which holds ``pyproject.toml``."""
 OPTIONAL_ROOT_FILES = ("README.md", "README.rst", "LICENSE", "LICENSE.md", "LICENSE.txt", "CHANGELOG.md")
+"""Files in the root that the archive includes when they exist, besides ``pyproject.toml``."""
 EXCLUDED_DIRECTORIES = {
     "__pycache__",
     ".git",
@@ -28,10 +32,21 @@ EXCLUDED_DIRECTORIES = {
     ".mypy_cache",
     ".pytest_cache",
 }
+"""Directories inside the package that the archive leaves out."""
 ZIP_TIMESTAMP = (2000, 1, 1, 0, 0, 0)
+"""Every file's timestamp in the archive, so that its sha256 depends only on the files' contents."""
 
 
 def main() -> None:
+    """
+    Build the archive, write its sha256 file, and print both.
+
+    The output directory is the first command line argument, ``dist`` by default. It is created if
+    needed, and an archive of the same version in it is replaced.
+
+    :raises KeyError: when ``pyproject.toml`` lacks the slug, the package or the version.
+    :raises FileNotFoundError: when ``pyproject.toml`` or the package is missing.
+    """
     manifest = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     slug, package = manifest["tool"]["smarter"]["slug"], manifest["tool"]["smarter"]["package"]
     version = manifest["project"]["version"]
