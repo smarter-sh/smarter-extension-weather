@@ -8,7 +8,7 @@ description: Use when writing, fixing or running the tests of a Smarter Extensio
 The tests live in `tests/test_tools.py`. They call the tools directly, without installing the
 extension, without a database and without an LLM. They import Smarter
 (`smarter.apps.llmtool.extension`), so they run where Smarter's code and libraries are: the
-`smarter-app` development container of the sibling checkout `../smarter`, or CI.
+`smarter-api` development container of the sibling checkout `../smarter`, or CI.
 
 ## Run them
 
@@ -19,7 +19,7 @@ scripts/run-tests.sh             # tests and a coverage report
 scripts/run-tests.sh --validate  # also manage.py validate_extension
 ```
 
-The script copies the working tree to `/tmp/<repository name>` in `smarter-app` (replacing its own
+The script copies the working tree to `/tmp/<repository name>` in `smarter-api` (replacing its own
 previous copy, and nothing else), and runs the same command CI runs: `coverage run -m unittest
 discover -s tests -t .` with `PYTHONPATH` set to the copy and to Smarter's source. `--validate` then
 checks the extension as the installer and the registry will: its `pyproject.toml`, its
@@ -29,7 +29,7 @@ see it.
 Run it yourself after every change. Never ask the user to. Write a long log to your scratchpad and
 read the summary from it.
 
-- If `smarter-app` isn't running, start the environment from `../smarter` (`make run`, which
+- If `smarter-api` isn't running, start the environment from `../smarter` (`make run`, which
   never returns: run it in the background and wait for `curl localhost:9357/` to return 302). The
   smarter repository's `smarter-docker-environment` skill has the details.
 - **No `../smarter` checkout?** The tests need a Smarter development environment: clone

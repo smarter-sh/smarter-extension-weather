@@ -39,7 +39,7 @@ first.
    `smarter-extension-git-commits`.
 2. **Never edit `version` in `pyproject.toml`, or `CHANGELOG.md`.** semantic-release owns both,
    on every push to `main`. A commit's type decides the release. See `smarter-extension-release`.
-3. **Run the tests yourself**, in the `smarter-app` container, after any change. Never ask the
+3. **Run the tests yourself**, in the `smarter-api` container, after any change. Never ask the
    user to. See `smarter-extension-testing`. The container holds live cloud credentials: tests
    mock every third-party service and never need a real API key.
 4. **Import only what the platform installs.** An extension can't install libraries. Anything it

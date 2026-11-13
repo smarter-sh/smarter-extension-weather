@@ -38,8 +38,8 @@ CI runs the tests on every push and pull request, against a source checkout of S
 coverage to Codecov. To run them yourself, in a Smarter development container:
 
 ```console
-docker cp . smarter-app:/tmp/smarter-extension-weather
-docker exec smarter-app bash -c "cd /home/smarter_user/smarter && python manage.py test_extension /tmp/smarter-extension-weather"
+docker cp . smarter-api:/tmp/smarter-extension-weather
+docker exec smarter-api bash -c "cd /home/smarter_user/smarter && python manage.py test_extension /tmp/smarter-extension-weather"
 ```
 
 ## Release

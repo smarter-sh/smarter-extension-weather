@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run this Smarter Extension's tests in the local Smarter development container, smarter-app, the
+# Run this Smarter Extension's tests in the local Smarter development container, smarter-api, the
 # way CI runs them: against Smarter's code, without its database, and with coverage.
 #
 # usage, from the extension repository's root:
@@ -8,12 +8,12 @@
 #
 # It copies the working tree (without .git, node_modules, dist or CI's .smarter checkout) to
 # /tmp/<repository name> in the container, replacing the previous copy that this script made.
-# Nothing else in the container is changed. CONTAINER defaults to smarter-app.
+# Nothing else in the container is changed. CONTAINER defaults to smarter-api.
 #
 # exit status: 0 if the tests (and validation, if asked) pass, 1 otherwise.
 set -euo pipefail
 
-CONTAINER="${CONTAINER:-smarter-app}"
+CONTAINER="${CONTAINER:-smarter-api}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 NAME="$(basename "$ROOT")"
 TARGET="/tmp/$NAME"
